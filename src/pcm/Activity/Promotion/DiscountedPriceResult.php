@@ -2,10 +2,10 @@
 
 namespace PChome24h\PCM\Activity\Promotion;
 
-class DiscountedPrice
+class DiscountedPriceResult
 {
-    public int $discountedPrice;
-    public bool $isDisplay;
+    public $discountedPrice;
+    public $isDisplay;
 
     public function __construct($discountedPrice, $isDisplay)
     {

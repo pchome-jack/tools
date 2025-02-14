@@ -12,7 +12,7 @@ class DiscountedPriceCalculator
      * @param int $originalPrice
      * @param array $promotion
      * @param array $promotionTiers
-     * @return int
+     * @return DiscountedPriceResult
      */
     public function calculate($originalPrice, $promotion, $promotionTiers)
     {
@@ -55,7 +55,7 @@ class DiscountedPriceCalculator
             default:
         }
 
-        return new DiscountedPrice($discountedPrice, $promotion['IS_DISPLAY_PRICE'] == '1');
+        return new DiscountedPriceResult($discountedPrice, $promotion['IS_DISPLAY_PRICE'] == '1');
     }
 
     private function calculateDiscountByPercentage($price, $promotionTiers)
