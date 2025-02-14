@@ -1,6 +1,6 @@
 <?php
 
-namespace PChome24h\PCM\;
+namespace PChome24h\PCM\Activity\Promotion;
 
 use PChome24h\PCM\Activity\Promotion\Constant\Promotion;
 
