@@ -4,8 +4,12 @@ namespace PChome24h\PCM\Activity\Promotion;
 
 class DiscountedPrice
 {
-    public function __construct(
-        public int $discountedPrice,
-        public bool $isDisplay,
-    ) {}
+    public int $discountedPrice;
+    public bool $isDisplay;
+
+    public function __construct($discountedPrice, $isDisplay)
+    {
+        $this->discountedPrice = $discountedPrice;
+        $this->isDisplay = $isDisplay;
+    }
 }
