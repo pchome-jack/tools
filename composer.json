@@ -14,5 +14,7 @@
             "email": "chengliang@pchome.tw"
         }
     ],
-    "require": {}
+    "require": {
+        "illuminate/database": "^11.42"
+    }
 }

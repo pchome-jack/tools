@@ -2,6 +2,7 @@
 
 namespace PChome24h\PCM\Activity\Promotion;
 
+use Illuminate\Support\Facades\DB;
 use PChome24h\PCM\Activity\Promotion\Constant\Promotion;
 
 class DiscountedPriceCalculator
@@ -56,6 +57,19 @@ class DiscountedPriceCalculator
         }
 
         return new DiscountedPriceResult($discountedPrice, $promotion['IS_DISPLAY_PRICE'] == '1');
+    }
+
+    public function getDiscountedPrice($itemNo)
+    {
+        $promotion = DB::select(DB::raw('
+            SELECT APM.PROMO_ID, APM.PROMO_TYPE, IS_DISPLAY_PRICE
+            FROM ECOPER.ACT_PROMO_MAIN APM
+            LEFT JOIN ECOPER.ACT_PROMO_ITEM API ON APM.PROMO_ID = API.PROMO_ID
+            WHERE API.IT_NO = :IT_NO AND API.STATUS = :STATUS AND APM.STATUS = :STATUS ORDER BY APM.CREDTM DESC'),
+            ['IT_NO' => $itemNo, 'STATUS' => '1'],
+        );
+
+        echo(json_encode($promotion));exit();
     }
 
     private function calculateDiscountByPercentage($price, $promotionTiers)
