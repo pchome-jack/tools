@@ -3,6 +3,7 @@
 namespace PChome24h\PCM\Activity\Promotion;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PChome24h\PCM\Activity\Promotion\Constant\Promotion;
 
 class DiscountedPriceCalculator
