@@ -129,7 +129,7 @@ class DiscountedPriceCalculator
 
         $firstPromotionRow = null;
         foreach ($promotions as $promotion) {
-            if (!in_array($promotion['PROMO_TYPE'], [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
+            if (!in_array($promotion->PROMO_TYPE, [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
                 $firstPromotionRow = $promotion;
                 break;
             }
@@ -139,26 +139,26 @@ class DiscountedPriceCalculator
             $firstPromotionRow = $promotions[0];
         }
 
-        $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $firstPromotionRow['PROMO_ID']]);
+        $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $firstPromotionRow->PROMO_ID]);
 
         if (!is_array($tiers) || empty($tiers)) {
             return new DiscountedPriceResult(null, null);
         }
 
-        $discountedPrice = $this->calculate($items[0]['IT_PRICE'], $firstPromotionRow, $tiers);
+        $discountedPrice = $this->calculate($items[0]->IT_PRICE, $firstPromotionRow, $tiers);
 
-        if ($promotion['PROMO_TYPE'] == Promotion::DISCOUNT_BY_ITEM && count($tiers) == 1 && $tiers[0]['PT_THRESHOLD'] == 1) {
+        if ($promotion->PROMO_TYPE == Promotion::DISCOUNT_BY_ITEM && count($tiers) == 1 && $tiers[0]->PT_THRESHOLD == 1) {
             $overlapPromotion = null;
 
             foreach ($promotions as $promotion) {
-                if (in_array($promotion['PROMO_TYPE'], [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
+                if (in_array($promotion->PROMO_TYPE, [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
                     $overlapPromotion = $promotion;
                     break;
                 }
             }
 
             if ($overlapPromotion !== null) {
-                $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $overlapPromotion['PROMO_ID']]);
+                $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $overlapPromotion->PROMO_ID]);
 
                 if (!is_array($tiers) || empty($tiers)) {
                     return new DiscountedPriceResult(null, null);
