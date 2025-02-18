@@ -12,4 +12,9 @@ class DiscountedPriceResult
         $this->discountedPrice = $discountedPrice;
         $this->isDisplay = $isDisplay;
     }
+
+    public function __toString()
+    {
+        return json_encode($this);
+    }
 }
