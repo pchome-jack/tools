@@ -16,4 +16,7 @@ class Promotion
     const DISCOUNTED_PRICE_BY_SELECTION = '6'; // 任選優惠價
     const ADDITIONAL_DISCOUNT_BY_AMOUNT = '7'; // 滿額再打折
     const ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT = '8'; // 滿額再折現
+
+    // 新舊活動切換日期
+    const SWITCH_DATE = '2025/06/01';
 }
