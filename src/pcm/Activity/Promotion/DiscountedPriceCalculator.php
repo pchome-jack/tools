@@ -115,6 +115,9 @@ class DiscountedPriceCalculator
             return new DiscountedPriceResult(null, null);
         }
 
+        $items = json_decode(json_encode($items), true);
+        Log::info($items);
+
         $promotions = DB::select(DB::raw('
             SELECT APM.PROMO_ID, APM.PROMO_TYPE, IS_DISPLAY_PRICE
             FROM ECOPER.ACT_PROMO_MAIN APM
@@ -127,9 +130,12 @@ class DiscountedPriceCalculator
             return new DiscountedPriceResult(null, null);
         }
 
+        $promotions = json_decode(json_encode($promotions), true);
+        Log::info($promotions);
+
         $firstPromotionRow = null;
         foreach ($promotions as $promotion) {
-            if (!in_array($promotion->PROMO_TYPE, [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
+            if (!in_array($promotion['PROMO_TYPE'], [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
                 $firstPromotionRow = $promotion;
                 break;
             }
@@ -139,26 +145,33 @@ class DiscountedPriceCalculator
             $firstPromotionRow = $promotions[0];
         }
 
-        $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $firstPromotionRow->PROMO_ID]);
+        $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $firstPromotionRow['PROMO_ID']]);
+
+        $tiers = json_decode(json_encode($tiers), true);
+        Log::info($tiers);
 
         if (!is_array($tiers) || empty($tiers)) {
             return new DiscountedPriceResult(null, null);
         }
 
-        $discountedPrice = $this->calculate($items[0]->IT_PRICE, $firstPromotionRow, $tiers);
+        $discountedPrice = $this->calculate($items[0]['IT_PRICE'], $firstPromotionRow, $tiers);
+        Log::info($discountedPrice);
 
-        if ($promotion->PROMO_TYPE == Promotion::DISCOUNT_BY_ITEM && count($tiers) == 1 && $tiers[0]->PT_THRESHOLD == 1) {
+        if ($promotion['PROMO_TYPE'] == Promotion::DISCOUNT_BY_ITEM && count($tiers) == 1 && $tiers[0]['PT_THRESHOLD'] == 1) {
             $overlapPromotion = null;
 
             foreach ($promotions as $promotion) {
-                if (in_array($promotion->PROMO_TYPE, [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
+                if (in_array($promotion['PROMO_TYPE'], [Promotion::ADDITIONAL_CASH_DISCOUNT_BY_AMOUNT, Promotion::ADDITIONAL_DISCOUNT_BY_AMOUNT])) {
                     $overlapPromotion = $promotion;
                     break;
                 }
             }
 
             if ($overlapPromotion !== null) {
-                $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $overlapPromotion->PROMO_ID]);
+                $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $overlapPromotion['PROMO_ID']]);
+
+                $tiers = json_decode(json_encode($tiers), true);
+                Log::info($tiers);
 
                 if (!is_array($tiers) || empty($tiers)) {
                     return new DiscountedPriceResult(null, null);
@@ -169,6 +182,8 @@ class DiscountedPriceCalculator
                     $overlapPromotion,
                     $tiers
                 );
+
+                Log::info($overlapDiscountedPrice);
 
                 if (isset($overlapDiscountedPrice->discountedPrice)) {
                     $discountedPrice = $overlapDiscountedPrice;
