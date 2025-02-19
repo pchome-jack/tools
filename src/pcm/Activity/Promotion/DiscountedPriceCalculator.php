@@ -201,7 +201,9 @@ class DiscountedPriceCalculator
         $actData = call_user_func(function($itemNo) {
             $cache = Cache::store('memcached-memstore');
 
-            $cacheKey = 'MktActV1_'.$itemNo;
+            $prefix = env('MEMCACHED_PC_PREFIX');
+
+            $cacheKey = $prefix.'MktActV1_'.$itemNo;
 
             Log::info($cacheKey);
 
