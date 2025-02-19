@@ -197,6 +197,87 @@ class DiscountedPriceCalculator
 
     private function getDiscountedPriceFromCache($itemNo)
     {
-        return new DiscountedPriceResult(null, null);
+        $actData = call_user_func(function($strProdId) {
+            $cache = Cache::store('memcached-memstore')->get();
+
+            $cacheKey = 'MktActV1_'.$strProdId;
+
+            $result = [];
+
+            $cacheData = $cache->get($cacheKey);
+
+            if ($cacheData == false) {
+                return false;
+            }
+
+            $cacheData = json_decode($cacheData);
+
+            if (empty($cacheData)) {
+                return false;
+            }
+
+            $prodCache = $cacheData[0];
+
+            $activityCacheKey = 'MktActInfoV1_'.$prodCache->ActId;
+
+            $cacheData = $cache->get($activityCacheKey);
+
+            if ($cacheData === false) {
+                return false;
+            }
+
+            $cacheData = json_decode($cacheData);
+
+            if ($cacheData->StartDtm > date('Y/m/d H:i:s') || $cacheData->EndDtm < date('Y/m/d H:i:s') || $cacheData->Status != 'Progress') {
+                $result = [];
+            } else {
+                $result[] = $cacheData;
+            }
+
+            return (count($result) > 0) ?  $result[0] : false;
+
+        }, $itemNo);
+
+        if($actData === false) {
+            return new DiscountedPriceResult(null, null);
+        }
+
+        if(in_array($actData->ActType, [1, 7]) && $actData->ActLimitX == 1) {
+            // 任選打折、滿件打折
+            $intLowPrice = $intPrice * ($actData->ActLimitY / 100);
+        } else if($actData->ActType == 2 && $actData->ActLimitX == 1) {
+            // 任選優惠價
+            $intLowPrice = $actData->ActLimitY;
+        } else if(in_array($actData->ActType, [3, 8]) && $actData->ActLimitX == 1) {
+            // 任選折扣、滿件折扣
+            $intLowPrice = $intPrice - $actData->ActLimitY;
+        } else if($actData->ActType == 4 && $intPrice >= $actData->ActLimitX) {
+            // 滿額打折
+            $intLowPrice = $intPrice * ($actData->ActLimitY / 100);
+
+            if (isset($actData->ActTier)) {
+                foreach ($actData->ActTier as $objTier) {
+                    if ($intPrice >= $objTier->ActLimitX) {
+                        $intLowPrice = $intPrice * ($objTier->ActLimitY / 100);
+                    }
+                }
+            }
+        } else if($actData->ActType == 5 && $intPrice >= $actData->ActLimitX) {
+            // 滿額折扣
+            $intLowPrice = $intPrice - $actData->ActLimitY;
+
+            if (isset($actData->ActTier)) {
+                foreach ($actData->ActTier as $objTier) {
+                    if ($intPrice >= $objTier->ActLimitX) {
+                        $intLowPrice = $intPrice - $objTier->ActLimitY;
+                    }
+                }
+            }
+        } else if($actData->ActType == 6 && $intPrice >= $actData->ActLimitX) {
+            // 滿額折扣無上限
+            $intLowPrice = $intPrice - floor($intPrice / $actData->ActLimitX) * $actData->ActLimitY;
+        }
+
+        return new DiscountedPriceResult(floor($intLowPrice), $actData->IsDisplayPrice);
     }
 }
