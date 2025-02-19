@@ -198,14 +198,18 @@ class DiscountedPriceCalculator
 
     private function getDiscountedPriceFromCache($itemNo)
     {
-        $actData = call_user_func(function($strProdId) {
+        $actData = call_user_func(function($itemNo) {
             $cache = Cache::store('memcached-memstore');
 
-            $cacheKey = 'MktActV1_'.$strProdId;
+            $cacheKey = 'MktActV1_'.$itemNo;
+
+            Log::info($cacheKey);
 
             $result = [];
 
             $cacheData = $cache->get($cacheKey);
+
+            Log::info($cacheData);
 
             if ($cacheData == false) {
                 return false;
@@ -223,6 +227,8 @@ class DiscountedPriceCalculator
 
             $cacheData = $cache->get($activityCacheKey);
 
+            Log::info($cacheData);
+
             if ($cacheData === false) {
                 return false;
             }
@@ -238,6 +244,8 @@ class DiscountedPriceCalculator
             return (count($result) > 0) ?  $result[0] : false;
 
         }, $itemNo);
+
+        Log::info($actData);
 
         if($actData === false) {
             return new DiscountedPriceResult(null, null);
