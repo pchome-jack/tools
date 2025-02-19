@@ -1,0 +1,20 @@
+{
+    "name": "pchome24h/composer-tools",
+    "description": "共用工具",
+    "version": "dev-main",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "PChome24h\\PCM\\": "src/pcm"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jack",
+            "email": "chengliang@pchome.tw"
+        }
+    ],
+    "require": {
+        "illuminate/database": "^9"
+    }
+}
