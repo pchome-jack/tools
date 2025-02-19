@@ -248,7 +248,7 @@ class DiscountedPriceCalculator
 
         }, $itemNo);
 
-        Log::info($actData);
+        Log::info(json_encode($actData));
 
         if($actData === false) {
             return new DiscountedPriceResult(null, null);
