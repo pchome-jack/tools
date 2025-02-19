@@ -199,7 +199,7 @@ class DiscountedPriceCalculator
     private function getDiscountedPriceFromCache($itemNo)
     {
         $actData = call_user_func(function($strProdId) {
-            $cache = Cache::store('memcached-memstore')->get();
+            $cache = Cache::store('memcached-memstore');
 
             $cacheKey = 'MktActV1_'.$strProdId;
 
