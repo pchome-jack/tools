@@ -225,13 +225,14 @@ class DiscountedPriceCalculator
 
             $prodCache = $cacheData[0];
 
-            $activityCacheKey = 'MktActInfoV1_'.$prodCache->ActId;
+            $activityCacheKey = $prefix.'MktActInfoV1_'.$prodCache->ActId;
 
+            Log::info($activityCacheKey);
             $cacheData = Cache::get($activityCacheKey);
 
             Log::info($cacheData);
 
-            if ($cacheData === false) {
+            if (empty($cacheData)) {
                 return false;
             }
 
