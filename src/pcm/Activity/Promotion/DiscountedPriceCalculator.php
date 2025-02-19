@@ -4,6 +4,7 @@ namespace PChome24h\PCM\Activity\Promotion;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use PChome24h\PCM\Activity\Promotion\Constant\Promotion;
 
 class DiscountedPriceCalculator
@@ -97,11 +98,14 @@ class DiscountedPriceCalculator
      */
     public function getDiscountedPrice($itemNo)
     {
+        Log::info(__LINE__);
         if (date('Y/m/d') >= Promotion::SWITCH_DATE)
         {
+            Log::info(__LINE__);
             return $this->getDiscountedPriceFromDB($itemNo);
         }
 
+        Log::info(__LINE__);
         return $this->getDiscountedPriceFromCache($itemNo);
     }
 
