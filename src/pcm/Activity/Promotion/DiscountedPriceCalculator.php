@@ -123,7 +123,7 @@ class DiscountedPriceCalculator
             FROM ECOPER.ACT_PROMO_MAIN APM
             LEFT JOIN ECOPER.ACT_PROMO_ITEM API ON APM.PROMO_ID = API.PROMO_ID
             WHERE API.IT_NO = :IT_NO AND API.STATUS = :STATUS AND APM.STATUS = :STATUS ORDER BY APM.CREDTM DESC'),
-            ['IT_NO' => $itemNo, 'STATUS' => '1'],
+            ['IT_NO' => $itemNo, 'STATUS' => '1']
         );
 
         if (!is_array($promotions) || empty($promotions)) {
