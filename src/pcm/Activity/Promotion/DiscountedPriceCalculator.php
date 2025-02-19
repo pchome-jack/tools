@@ -3,7 +3,6 @@
 namespace PChome24h\PCM\Activity\Promotion;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use PChome24h\PCM\Activity\Promotion\Constant\Promotion;
 
@@ -118,7 +117,6 @@ class DiscountedPriceCalculator
         }
 
         $items = json_decode(json_encode($items), true);
-        Log::info($items);
 
         $promotions = DB::select(DB::raw('
             SELECT APM.PROMO_ID, APM.PROMO_TYPE, IS_DISPLAY_PRICE
@@ -133,7 +131,6 @@ class DiscountedPriceCalculator
         }
 
         $promotions = json_decode(json_encode($promotions), true);
-        Log::info($promotions);
 
         $firstPromotionRow = null;
         foreach ($promotions as $promotion) {
@@ -150,14 +147,12 @@ class DiscountedPriceCalculator
         $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $firstPromotionRow['PROMO_ID']]);
 
         $tiers = json_decode(json_encode($tiers), true);
-        Log::info($tiers);
 
         if (!is_array($tiers) || empty($tiers)) {
             return new DiscountedPriceResult(null, null);
         }
 
         $discountedPrice = $this->calculate($items[0]['IT_PRICE'], $firstPromotionRow, $tiers);
-        Log::info($discountedPrice);
 
         if ($promotion['PROMO_TYPE'] == Promotion::DISCOUNT_BY_ITEM && count($tiers) == 1 && $tiers[0]['PT_THRESHOLD'] == 1) {
             $overlapPromotion = null;
@@ -173,7 +168,6 @@ class DiscountedPriceCalculator
                 $tiers = DB::select(DB::raw('SELECT * FROM ECOPER.ACT_PROMO_TIER WHERE PROMO_ID = :PROMO_ID'), [':PROMO_ID' => $overlapPromotion['PROMO_ID']]);
 
                 $tiers = json_decode(json_encode($tiers), true);
-                Log::info($tiers);
 
                 if (!is_array($tiers) || empty($tiers)) {
                     return new DiscountedPriceResult(null, null);
@@ -184,8 +178,6 @@ class DiscountedPriceCalculator
                     $overlapPromotion,
                     $tiers
                 );
-
-                Log::info($overlapDiscountedPrice);
 
                 if (isset($overlapDiscountedPrice->discountedPrice)) {
                     $discountedPrice = $overlapDiscountedPrice;
@@ -211,13 +203,9 @@ class DiscountedPriceCalculator
 
             $cacheKey = $prefix.'MktActV1_'.$itemNo;
 
-            Log::info($cacheKey);
-
             $result = [];
 
             $cacheData = Cache::get($cacheKey);
-
-            Log::info($cacheData);
 
             if ($cacheData == false) {
                 return false;
@@ -233,10 +221,7 @@ class DiscountedPriceCalculator
 
             $activityCacheKey = $prefix.'MktActInfoV1_'.$prodCache->ActId;
 
-            Log::info($activityCacheKey);
             $cacheData = Cache::get($activityCacheKey);
-
-            Log::info($cacheData);
 
             if (empty($cacheData)) {
                 return false;
@@ -253,8 +238,6 @@ class DiscountedPriceCalculator
             return (count($result) > 0) ?  $result[0] : false;
 
         }, $itemNo);
-
-        Log::info(json_encode($actData));
 
         if($actData === false) {
             return new DiscountedPriceResult(null, null);
