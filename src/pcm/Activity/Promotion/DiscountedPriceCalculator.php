@@ -198,9 +198,15 @@ class DiscountedPriceCalculator
 
     private function getDiscountedPriceFromCache($itemNo)
     {
-        $actData = call_user_func(function($itemNo) {
-            // $cache = Cache::store('memcached-memstore');
+        $item = DB::select(DB::raw('SELECT IT_PRICE FROM ECOPER.ITEM WHERE IT_NO = :IT_NO AND SIT_NO = :SIT_NO'), [':IT_NO' => $itemNo, ':SIT_NO' => '000']);
 
+        if (!is_array($item) || empty($item)) {
+            return new DiscountedPriceResult(null, null);
+        }
+
+        $price = $item[0]->IT_PRICE;
+
+        $actData = call_user_func(function($itemNo) {
             $prefix = env('MEMCACHED_PC_PREFIX');
 
             $cacheKey = $prefix.'MktActV1_'.$itemNo;
@@ -254,42 +260,44 @@ class DiscountedPriceCalculator
             return new DiscountedPriceResult(null, null);
         }
 
+        $lowPrice = $price;
+
         if(in_array($actData->ActType, [1, 7]) && $actData->ActLimitX == 1) {
             // 任選打折、滿件打折
-            $intLowPrice = $intPrice * ($actData->ActLimitY / 100);
+            $lowPrice = $price * ($actData->ActLimitY / 100);
         } else if($actData->ActType == 2 && $actData->ActLimitX == 1) {
             // 任選優惠價
-            $intLowPrice = $actData->ActLimitY;
+            $lowPrice = $actData->ActLimitY;
         } else if(in_array($actData->ActType, [3, 8]) && $actData->ActLimitX == 1) {
             // 任選折扣、滿件折扣
-            $intLowPrice = $intPrice - $actData->ActLimitY;
-        } else if($actData->ActType == 4 && $intPrice >= $actData->ActLimitX) {
+            $lowPrice = $price - $actData->ActLimitY;
+        } else if($actData->ActType == 4 && $price >= $actData->ActLimitX) {
             // 滿額打折
-            $intLowPrice = $intPrice * ($actData->ActLimitY / 100);
+            $lowPrice = $price * ($actData->ActLimitY / 100);
 
             if (isset($actData->ActTier)) {
                 foreach ($actData->ActTier as $objTier) {
-                    if ($intPrice >= $objTier->ActLimitX) {
-                        $intLowPrice = $intPrice * ($objTier->ActLimitY / 100);
+                    if ($price >= $objTier->ActLimitX) {
+                        $lowPrice = $price * ($objTier->ActLimitY / 100);
                     }
                 }
             }
-        } else if($actData->ActType == 5 && $intPrice >= $actData->ActLimitX) {
+        } else if($actData->ActType == 5 && $price >= $actData->ActLimitX) {
             // 滿額折扣
-            $intLowPrice = $intPrice - $actData->ActLimitY;
+            $lowPrice = $price - $actData->ActLimitY;
 
             if (isset($actData->ActTier)) {
                 foreach ($actData->ActTier as $objTier) {
-                    if ($intPrice >= $objTier->ActLimitX) {
-                        $intLowPrice = $intPrice - $objTier->ActLimitY;
+                    if ($price >= $objTier->ActLimitX) {
+                        $lowPrice = $price - $objTier->ActLimitY;
                     }
                 }
             }
-        } else if($actData->ActType == 6 && $intPrice >= $actData->ActLimitX) {
+        } else if($actData->ActType == 6 && $price >= $actData->ActLimitX) {
             // 滿額折扣無上限
-            $intLowPrice = $intPrice - floor($intPrice / $actData->ActLimitX) * $actData->ActLimitY;
+            $lowPrice = $price - floor($price / $actData->ActLimitX) * $actData->ActLimitY;
         }
 
-        return new DiscountedPriceResult(floor($intLowPrice), $actData->IsDisplayPrice);
+        return new DiscountedPriceResult(floor($lowPrice), $actData->IsDisplayPrice);
     }
 }
