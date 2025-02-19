@@ -13,8 +13,5 @@
             "name": "Jack",
             "email": "chengliang@pchome.tw"
         }
-    ],
-    "require": {
-        "illuminate/database": "^9"
-    }
+    ]
 }
